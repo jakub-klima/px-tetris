@@ -8,7 +8,6 @@ using System.Linq;
 
 namespace PxTetris.Core
 {
-    // TODO [Refactor] Zavest pomocne metody / tridy
     public class GameScreen : IScreen
     {
         private const int gameAreaOffset = 75;
@@ -18,8 +17,8 @@ namespace PxTetris.Core
 
         private readonly Level level = new Level();
         private readonly GameTimer timer = new GameTimer();
-        private readonly Square[,] squares = new Square[13, 18];
-        private Brick brick = new Brick();
+        private readonly SquareGrid squares = new SquareGrid();
+        private Brick activeBrick = new Brick();
         private Brick nextBrick = new Brick();
         private bool paused;
         private GameState state = GameState.Running;
@@ -39,75 +38,18 @@ namespace PxTetris.Core
             {
                 paused = !paused;
             }
-            if (paused)
-            {
-                return;
-            }
+            if (paused) return;
 
             timer.Update(elapsedTime);
 
             switch (state)
             {
                 case GameState.Running:
-                    if (justPressedKeys.Contains(Keys.Up) || justPressedKeys.Contains(Keys.Space))
-                    {
-                        brick.Rotate();
-                        if (!BrickPositionValid())
-                        {
-                            brick.UndoRotation();
-                        }
-                    }
-
-                    if (pressedKeys.Contains(Keys.Right) && LastMoveCooldownElapsed())
-                    {
-                        lastMoveTime = DateTime.Now;
-                        brick.MoveRight();
-                        if (!BrickPositionValid())
-                        {
-                            brick.UndoMove();
-                        }
-                    }
-                    else if (pressedKeys.Contains(Keys.Left) && LastMoveCooldownElapsed())
-                    {
-                        lastMoveTime = DateTime.Now;
-                        brick.MoveLeft();
-                        if (!BrickPositionValid())
-                        {
-                            brick.UndoMove();
-                        }
-                    }
-
-                    if (timer.TickCompleted ||
-                        (pressedKeys.Contains(Keys.Down) && LastMoveCooldownElapsed()))
-                    {
-                        lastMoveTime = DateTime.Now;
-                        OnGameTick();
-                    }
+                    UpdateRunning(pressedKeys, justPressedKeys);
                     break;
 
                 case GameState.RowClearing:
-                    if (timer.TickCompleted)
-                    {
-                        if (AnyRowFull())
-                        {
-                            ClearRow();
-                            rowsClearedCombo++;
-                            Score += 100 * (int)Math.Pow(2, rowsClearedCombo - 1);
-                            if (Score > level.ScoreToNextLevel)
-                            {
-                                level.IncreaseLevel();
-                                state = GameState.LevelUp;
-                            }
-                            timer.RequestGameMessageTick();
-                        }
-                        else
-                        {
-                            rowsClearedCombo = 0;
-                            state = GameState.Running;
-                            timer.RequestLevelTick(level);
-                            PrepareNewBrick();
-                        }
-                    }
+                    UpdateRowClearing();
                     break;
 
                 case GameState.LevelUp:
@@ -127,6 +69,44 @@ namespace PxTetris.Core
             }
         }
 
+        private void UpdateRunning(IReadOnlyCollection<Keys> pressedKeys, IReadOnlyCollection<Keys> justPressedKeys)
+        {
+            if (justPressedKeys.Contains(Keys.Up) || justPressedKeys.Contains(Keys.Space))
+            {
+                activeBrick.Rotate();
+                if (!ActiveBrickPositionValid())
+                {
+                    activeBrick.UndoRotation();
+                }
+            }
+
+            if (pressedKeys.Contains(Keys.Right) && LastMoveCooldownElapsed())
+            {
+                lastMoveTime = DateTime.Now;
+                activeBrick.MoveRight();
+                if (!ActiveBrickPositionValid())
+                {
+                    activeBrick.UndoMove();
+                }
+            }
+            else if (pressedKeys.Contains(Keys.Left) && LastMoveCooldownElapsed())
+            {
+                lastMoveTime = DateTime.Now;
+                activeBrick.MoveLeft();
+                if (!ActiveBrickPositionValid())
+                {
+                    activeBrick.UndoMove();
+                }
+            }
+
+            if (timer.TickCompleted ||
+                (pressedKeys.Contains(Keys.Down) && LastMoveCooldownElapsed()))
+            {
+                lastMoveTime = DateTime.Now;
+                OnGameTick();
+            }
+        }
+
         private bool LastMoveCooldownElapsed()
         {
             return lastMoveTime.Add(TimeSpan.FromMilliseconds(80)) < DateTime.Now;
@@ -134,13 +114,13 @@ namespace PxTetris.Core
 
         private void OnGameTick()
         {
-            brick.MoveDown();
+            activeBrick.MoveDown();
             timer.RequestLevelTick(level);
-            if (!BrickPositionValid())
+            if (!ActiveBrickPositionValid())
             {
-                brick.UndoMove();
-                DissolveBrick();
-                if (AnyRowFull())
+                activeBrick.UndoMove();
+                DissolveActiveBrick();
+                if (squares.AnyRowFull())
                 {
                     state = GameState.RowClearing;
                     timer.RequestGameMessageTick();
@@ -154,89 +134,38 @@ namespace PxTetris.Core
 
         private void PrepareNewBrick()
         {
-            brick = nextBrick;
+            activeBrick = nextBrick;
             nextBrick = new Brick();
 
-            if (!BrickPositionValid())
+            if (!ActiveBrickPositionValid())
             {
                 state = GameState.GameOver;
                 timer.RequestGameOverTick();
             }
         }
 
-        private void DissolveBrick()
+        private void DissolveActiveBrick()
         {
-            for (int x = 0; x < brick.Squares.GetLength(0); x++)
-            {
-                for (int y = 0; y < brick.Squares.GetLength(1); y++)
-                {
-                    if (brick.Squares[x, y] != null)
-                    {
-                        squares[brick.Position.X + x, brick.Position.Y + y] = brick.Squares[x, y];
-                    }
-                }
-            }
-
-            brick = null;
+            squares.AddBrick(activeBrick);
+            activeBrick = null;
         }
 
-        private bool AnyRowFull()
+        private bool ActiveBrickPositionValid()
         {
-            return GetFullRow().HasValue;
-        }
-
-        private void ClearRow()
-        {
-            int fullRow = GetFullRow().Value;
-            for (int y = fullRow - 1; y >= 0; y--)
-            {
-                for (int x = 0; x < squares.GetLength(0); x++)
-                {
-                    squares[x, y + 1] = squares[x, y];
-                }
-            }
-        }
-
-        private int? GetFullRow()
-        {
-            for (int y = squares.GetLength(1) - 1; y >= 0; y--)
-            {
-                bool isRowFull = true;
-
-                for (int x = 0; x < squares.GetLength(0); x++)
-                {
-                    if (squares[x, y] == null)
-                    {
-                        isRowFull = false;
-                        break;
-                    }
-                }
-
-                if (isRowFull)
-                {
-                    return y;
-                }
-            }
-
-            return null;
-        }
-
-        private bool BrickPositionValid()
-        {
-            if (brick.Position.X < 0 ||
-                brick.Position.Y < 0 ||
-                brick.Position.X + brick.Squares.GetLength(0) > squares.GetLength(0) ||
-                brick.Position.Y + brick.Squares.GetLength(1) > squares.GetLength(1))
+            if (activeBrick.Position.X < 0 ||
+                activeBrick.Position.Y < 0 ||
+                activeBrick.Position.X + activeBrick.Squares.GetLength(0) > squares.Items.GetLength(0) ||
+                activeBrick.Position.Y + activeBrick.Squares.GetLength(1) > squares.Items.GetLength(1))
             {
                 return false;
             }
 
-            for (int x = 0; x < brick.Squares.GetLength(0); x++)
+            for (int x = 0; x < activeBrick.Squares.GetLength(0); x++)
             {
-                for (int y = 0; y < brick.Squares.GetLength(1); y++)
+                for (int y = 0; y < activeBrick.Squares.GetLength(1); y++)
                 {
-                    if (brick.Squares[x, y] != null &&
-                        squares[brick.Position.X + x, brick.Position.Y + y] != null)
+                    if (activeBrick.Squares[x, y] != null &&
+                        squares.Items[activeBrick.Position.X + x, activeBrick.Position.Y + y] != null)
                     {
                         return false;
                     }
@@ -246,27 +175,38 @@ namespace PxTetris.Core
             return true;
         }
 
+        private void UpdateRowClearing()
+        {
+            if (!timer.TickCompleted) return;
+
+            if (squares.AnyRowFull())
+            {
+                squares.ClearRow();
+                rowsClearedCombo++;
+                Score += 100 * (int)Math.Pow(2, rowsClearedCombo - 1);
+                if (Score > level.ScoreToNextLevel)
+                {
+                    level.IncreaseLevel();
+                    state = GameState.LevelUp;
+                }
+                timer.RequestGameMessageTick();
+            }
+            else
+            {
+                rowsClearedCombo = 0;
+                state = GameState.Running;
+                timer.RequestLevelTick(level);
+                PrepareNewBrick();
+            }
+        }
+
         public void Draw(SpriteBatch spriteBatch, Textures textures, SpriteFont font)
         {
             DrawInfoPanel(spriteBatch, textures, font);
-
-            if (brick != null)
+            squares.Draw(spriteBatch, textures, gameAreaOffset);
+            if (activeBrick != null)
             {
-                for (int x = 0; x < brick.Squares.GetLength(0); x++)
-                {
-                    for (int y = 0; y < brick.Squares.GetLength(1); y++)
-                    {
-                        brick.Squares[x, y]?.Draw(spriteBatch, textures, brick.Position.X + x, brick.Position.Y + y, 0, gameAreaOffset);
-                    }
-                }
-            }
-
-            for (int x = 0; x < squares.GetLength(0); x++)
-            {
-                for (int y = 0; y < squares.GetLength(1); y++)
-                {
-                    squares[x, y]?.Draw(spriteBatch, textures, x, y, 0, gameAreaOffset);
-                }
+                DrawActiveBrick(spriteBatch, textures);
             }
 
             if (state == GameState.GameOver)
@@ -292,17 +232,33 @@ namespace PxTetris.Core
         {
             const int infoPanelHeight = gameAreaOffset;
 
-            spriteBatch.Draw(textures.WhiteRectangle, new Rectangle(0, 0, squares.GetLength(0) * Square.Size, infoPanelHeight), Color.White);
+            spriteBatch.Draw(textures.WhiteRectangle, new Rectangle(0, 0, squares.Items.GetLength(0) * Square.Size, infoPanelHeight), Color.White);
             spriteBatch.DrawString(font, $"Level: {level.Number}", new Vector2(10, 5), Color.Black);
             spriteBatch.DrawString(font, $"Score: {Score}", new Vector2(10, 25), Color.Black);
             spriteBatch.DrawString(font, $"Next level: {level.ScoreToNextLevel}", new Vector2(10, 45), Color.Black);
 
             spriteBatch.DrawString(font, "Next:", new Vector2(200, 5), Color.Black);
+            DrawNextBrick(spriteBatch, textures);
+        }
+
+        private void DrawNextBrick(SpriteBatch spriteBatch, Textures textures)
+        {
             for (int x = 0; x < nextBrick.Squares.GetLength(0); x++)
             {
                 for (int y = 0; y < nextBrick.Squares.GetLength(1); y++)
                 {
                     nextBrick.Squares[x, y]?.Draw(spriteBatch, textures, x, y, 200, 30, 0.5f);
+                }
+            }
+        }
+
+        private void DrawActiveBrick(SpriteBatch spriteBatch, Textures textures)
+        {
+            for (int x = 0; x < activeBrick.Squares.GetLength(0); x++)
+            {
+                for (int y = 0; y < activeBrick.Squares.GetLength(1); y++)
+                {
+                    activeBrick.Squares[x, y]?.Draw(spriteBatch, textures, activeBrick.Position.X + x, activeBrick.Position.Y + y, 0, gameAreaOffset);
                 }
             }
         }
