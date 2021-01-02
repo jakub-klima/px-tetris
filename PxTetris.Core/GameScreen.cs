@@ -248,19 +248,7 @@ namespace PxTetris.Core
 
         public void Draw(SpriteBatch spriteBatch, Textures textures, SpriteFont font)
         {
-            spriteBatch.Draw(textures.WhiteRectangle, new Rectangle(0, 0, squares.GetLength(0) * Square.Size, gameAreaOffset), Color.White);
-            spriteBatch.DrawString(font, $"Level: {level.Number}", new Vector2(10, 5), Color.Black);
-            spriteBatch.DrawString(font, $"Score: {Score}", new Vector2(10, 25), Color.Black);
-            spriteBatch.DrawString(font, $"Next level: {level.ScoreToNextLevel}", new Vector2(10, 45), Color.Black);
-
-            spriteBatch.DrawString(font, "Next:", new Vector2(200, 5), Color.Black);
-            for (int x = 0; x < nextBrick.Squares.GetLength(0); x++)
-            {
-                for (int y = 0; y < nextBrick.Squares.GetLength(1); y++)
-                {
-                    nextBrick.Squares[x, y]?.Draw(spriteBatch, textures, x, y, 200, 30, 0.5f);
-                }
-            }
+            DrawInfoPanel(spriteBatch, textures, font);
 
             if (brick != null)
             {
@@ -297,6 +285,25 @@ namespace PxTetris.Core
             if (paused)
             {
                 spriteBatch.DrawString(font, "PAUSE", new Vector2(100, 200), Color.White);
+            }
+        }
+
+        private void DrawInfoPanel(SpriteBatch spriteBatch, Textures textures, SpriteFont font)
+        {
+            const int infoPanelHeight = gameAreaOffset;
+
+            spriteBatch.Draw(textures.WhiteRectangle, new Rectangle(0, 0, squares.GetLength(0) * Square.Size, infoPanelHeight), Color.White);
+            spriteBatch.DrawString(font, $"Level: {level.Number}", new Vector2(10, 5), Color.Black);
+            spriteBatch.DrawString(font, $"Score: {Score}", new Vector2(10, 25), Color.Black);
+            spriteBatch.DrawString(font, $"Next level: {level.ScoreToNextLevel}", new Vector2(10, 45), Color.Black);
+
+            spriteBatch.DrawString(font, "Next:", new Vector2(200, 5), Color.Black);
+            for (int x = 0; x < nextBrick.Squares.GetLength(0); x++)
+            {
+                for (int y = 0; y < nextBrick.Squares.GetLength(1); y++)
+                {
+                    nextBrick.Squares[x, y]?.Draw(spriteBatch, textures, x, y, 200, 30, 0.5f);
+                }
             }
         }
     }
