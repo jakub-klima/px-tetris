@@ -12,23 +12,32 @@ namespace PxTetris.Android
         Icon = "@drawable/icon",
         AlwaysRetainTaskState = true,
         LaunchMode = LaunchMode.SingleInstance,
-        ScreenOrientation = ScreenOrientation.FullUser,
-        ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.Keyboard | ConfigChanges.KeyboardHidden | ConfigChanges.ScreenSize
+        ScreenOrientation = ScreenOrientation.FullUser, // ve stare impl. bylo: ScreenOrientation.Portrait
+        ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.Keyboard | ConfigChanges.KeyboardHidden | ConfigChanges.ScreenSize // ve stare impl. bylo jeste: | ConfigChanges.ScreenLayout
     )]
-    public class Activity1 : AndroidGameActivity
+    public class Activity1 : AndroidGameActivity, View.IOnSystemUiVisibilityChangeListener
     {
-        private AndroidTetrisGame _game;
-        private View _view;
-
         protected override void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);
 
-            _game = new AndroidTetrisGame();
-            _view = _game.Services.GetService<View>();
+            var game = new AndroidTetrisGame();
+            SetContentView(game.Services.GetService<View>());
+            game.Run();
 
-            SetContentView(_view);
-            _game.Run();
+            Window.DecorView.SetOnSystemUiVisibilityChangeListener(this);
+            HideSystemUI();
+        }
+
+        public void OnSystemUiVisibilityChange(StatusBarVisibility visibility)
+        {
+            HideSystemUI();
+        }
+
+        private void HideSystemUI()
+        {
+            var flags = SystemUiFlags.HideNavigation | SystemUiFlags.ImmersiveSticky | SystemUiFlags.Fullscreen;
+            Window.DecorView.SystemUiVisibility = (StatusBarVisibility)flags;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PxTetris.Core;
+using System;
 
 namespace PxTetris.Desktop
 {
@@ -7,7 +8,7 @@ namespace PxTetris.Desktop
         [STAThread]
         static void Main()
         {
-            using var game = new DesktopTetrisGame();
+            using var game = new TetrisGame();
             game.Run();
         }
     }
