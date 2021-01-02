@@ -11,7 +11,6 @@ namespace PxTetris.Core
     // TODO [Refactor] Zavest pomocne metody / tridy
     public class GameScreen : IScreen
     {
-        private const int squareSize = 20;
         private const int gameAreaOffset = 75;
 
         public bool NextScreen { get; private set; }
@@ -19,7 +18,7 @@ namespace PxTetris.Core
 
         private readonly Level level = new Level();
         private readonly GameTimer timer = new GameTimer();
-        private readonly Square?[,] squares = new Square?[13, 18];
+        private readonly Square[,] squares = new Square[13, 18];
         private Brick brick = new Brick();
         private Brick nextBrick = new Brick();
         private bool paused;
@@ -171,7 +170,7 @@ namespace PxTetris.Core
             {
                 for (int y = 0; y < brick.Squares.GetLength(1); y++)
                 {
-                    if (brick.Squares[x, y].HasValue)
+                    if (brick.Squares[x, y] != null)
                     {
                         squares[brick.Position.X + x, brick.Position.Y + y] = brick.Squares[x, y];
                     }
@@ -206,7 +205,7 @@ namespace PxTetris.Core
 
                 for (int x = 0; x < squares.GetLength(0); x++)
                 {
-                    if (!squares[x, y].HasValue)
+                    if (squares[x, y] == null)
                     {
                         isRowFull = false;
                         break;
@@ -236,8 +235,8 @@ namespace PxTetris.Core
             {
                 for (int y = 0; y < brick.Squares.GetLength(1); y++)
                 {
-                    if (brick.Squares[x, y].HasValue &&
-                        squares[brick.Position.X + x, brick.Position.Y + y].HasValue)
+                    if (brick.Squares[x, y] != null &&
+                        squares[brick.Position.X + x, brick.Position.Y + y] != null)
                     {
                         return false;
                     }
@@ -249,7 +248,7 @@ namespace PxTetris.Core
 
         public void Draw(SpriteBatch spriteBatch, Textures textures, SpriteFont font)
         {
-            spriteBatch.Draw(textures.WhiteRectangle, new Rectangle(0, 0, squares.GetLength(0) * squareSize, gameAreaOffset), Color.White);
+            spriteBatch.Draw(textures.WhiteRectangle, new Rectangle(0, 0, squares.GetLength(0) * Square.Size, gameAreaOffset), Color.White);
             spriteBatch.DrawString(font, $"Level: {level.Number}", new Vector2(10, 5), Color.Black);
             spriteBatch.DrawString(font, $"Score: {Score}", new Vector2(10, 25), Color.Black);
             spriteBatch.DrawString(font, $"Next level: {level.ScoreToNextLevel}", new Vector2(10, 45), Color.Black);
@@ -259,10 +258,7 @@ namespace PxTetris.Core
             {
                 for (int y = 0; y < nextBrick.Squares.GetLength(1); y++)
                 {
-                    if (nextBrick.Squares[x, y].HasValue)
-                    {
-                        DrawSquare(spriteBatch, textures, nextBrick.Squares[x, y].Value, x, y, 200, 30, 0.5f);
-                    }
+                    nextBrick.Squares[x, y]?.Draw(spriteBatch, textures, x, y, 200, 30, 0.5f);
                 }
             }
 
@@ -272,10 +268,7 @@ namespace PxTetris.Core
                 {
                     for (int y = 0; y < brick.Squares.GetLength(1); y++)
                     {
-                        if (brick.Squares[x, y].HasValue)
-                        {
-                            DrawSquare(spriteBatch, textures, brick.Squares[x, y].Value, brick.Position.X + x, brick.Position.Y + y);
-                        }
+                        brick.Squares[x, y]?.Draw(spriteBatch, textures, brick.Position.X + x, brick.Position.Y + y, 0, gameAreaOffset);
                     }
                 }
             }
@@ -284,10 +277,7 @@ namespace PxTetris.Core
             {
                 for (int y = 0; y < squares.GetLength(1); y++)
                 {
-                    if (squares[x, y].HasValue)
-                    {
-                        DrawSquare(spriteBatch, textures, squares[x, y].Value, x, y);
-                    }
+                    squares[x, y]?.Draw(spriteBatch, textures, x, y, 0, gameAreaOffset);
                 }
             }
 
@@ -307,33 +297,6 @@ namespace PxTetris.Core
             if (paused)
             {
                 spriteBatch.DrawString(font, "PAUSE", new Vector2(100, 200), Color.White);
-            }
-        }
-
-        private void DrawSquare(SpriteBatch spriteBatch, Textures textures, Square square, int x, int y, int xOffset = 0, int yOffset = gameAreaOffset, float scale = 1)
-        {
-            Texture2D texture = GetTexture(textures, square);
-            float scaledSquareSize = squareSize * scale;
-            Rectangle destination = new Rectangle(xOffset + (int)(x * scaledSquareSize), yOffset + (int)(y * scaledSquareSize), (int)scaledSquareSize, (int)scaledSquareSize);
-            spriteBatch.Draw(texture, destination, Color.White);
-        }
-
-        private Texture2D GetTexture(Textures textures, Square square)
-        {
-            switch (square)
-            {
-                case Square.Blue:
-                    return textures.BrickBlue;
-                case Square.Green:
-                    return textures.BrickGreen;
-                case Square.Red:
-                    return textures.BrickRed;
-                case Square.Yellow:
-                    return textures.BrickYellow;
-                case Square.Purple:
-                    return textures.BrickPurple;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(square));
             }
         }
     }

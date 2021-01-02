@@ -6,21 +6,21 @@ namespace PxTetris.Core.GameScreenComponents
 {
     public class Brick
     {
-        private static readonly IReadOnlyList<Square?[,]> brickKinds = new[]
+        private static readonly IReadOnlyList<bool[,]> brickKinds = new[]
         {
-            new Square?[,] { { Square.Green, Square.Green, Square.Green, Square.Green } },
-            new Square?[,] { { Square.Green }, { Square.Green }, { Square.Green }, { Square.Green } },
-            new Square?[,] { { Square.Green, Square.Green }, { Square.Green, Square.Green } },
-            new Square?[,] { { Square.Green, Square.Green }, { Square.Green, Square.Green } },
-            new Square?[,] { { Square.Green, Square.Green, Square.Green }, { null, null, Square.Green } },
-            new Square?[,] { { null, null, Square.Green }, { Square.Green, Square.Green, Square.Green } },
-            new Square?[,] { { Square.Green, Square.Green, Square.Green }, { null, Square.Green, null } },
-            new Square?[,] { { null, Square.Green, null }, { Square.Green, Square.Green, Square.Green } },
-            new Square?[,] { { null, Square.Green, Square.Green }, { Square.Green, Square.Green, null } },
-            new Square?[,] { { Square.Green, Square.Green, null }, { null, Square.Green, Square.Green } },
+            new bool[,] { { true, true, true, true } },
+            new bool[,] { { true }, { true }, { true }, { true } },
+            new bool[,] { { true, true }, { true, true } },
+            new bool[,] { { true, true }, { true, true } },
+            new bool[,] { { true, true, true }, { false, false, true } },
+            new bool[,] { { false, false, true }, { true, true, true } },
+            new bool[,] { { true, true, true }, { false, true, false } },
+            new bool[,] { { false, true, false }, { true, true, true } },
+            new bool[,] { { false, true, true }, { true, true, false } },
+            new bool[,] { { true, true, false }, { false, true, true } },
         };
 
-        public Square?[,] Squares { get; private set; }
+        public Square[,] Squares { get; private set; }
         public Point Position { get; private set; }
         private Point lastPosition;
         private static readonly Random random = new Random();
@@ -29,32 +29,34 @@ namespace PxTetris.Core.GameScreenComponents
         {
             Position = new Point(5, 0);
 
-            int randomBrickType = random.Next(brickKinds.Count);
-            Squares = brickKinds[randomBrickType];
-
-            Square randomSquareType = (Square)random.Next(Enum.GetValues(typeof(Square)).Length);
-            ChangeSquareType(randomSquareType);
+            var randomBrickKind = brickKinds[random.Next(brickKinds.Count)];
+            Square randomSquare = Square.GetRandomSquare(random);
+            Squares = GetSquares(randomBrickKind, randomSquare);
         }
 
-        private void ChangeSquareType(Square squareType)
+        private static Square[,] GetSquares(bool[,] brickKind, Square squareType)
         {
-            for (int x = 0; x < Squares.GetLength(0); x++)
+            var result = new Square[brickKind.GetLength(0), brickKind.GetLength(1)];
+
+            for (int x = 0; x < brickKind.GetLength(0); x++)
             {
-                for (int y = 0; y < Squares.GetLength(1); y++)
+                for (int y = 0; y < brickKind.GetLength(1); y++)
                 {
-                    if (Squares[x, y].HasValue)
+                    if (brickKind[x, y] != false)
                     {
-                        Squares[x, y] = squareType;
+                        result[x, y] = squareType;
                     }
                 }
             }
+
+            return result;
         }
 
         public void Rotate()
         {
             int squaresWidth = Squares.GetLength(0);
             int squaresHeight = Squares.GetLength(1);
-            Square?[,] rotated = new Square?[squaresHeight, squaresWidth];
+            Square[,] rotated = new Square[squaresHeight, squaresWidth];
 
             for (int x = 0; x < squaresHeight; x++)
             {
