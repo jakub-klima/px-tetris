@@ -1,0 +1,12 @@
+rozliseni https://stackoverflow.com/a/8957109
+
+rest api high score na azure server
+- pokus o zapis skore na web pri otevreni hry nebo novem skore
+- psat uspesne i neuspesne pokusy do logu
+- pridat do zaznamu ID zarizeni (MAC adresu?)
+- pridat do zaznamu OS?
+
+prepinani obrazovek 
+- okamzity prechod ze zadani skore na novou hru
+- dela minimalne na Androidu
+- cooldown jako hotfix
