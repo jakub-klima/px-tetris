@@ -26,9 +26,9 @@ namespace PxTetris.Core
         public void Draw(SpriteBatch spriteBatch, Textures textures, SpriteFont font)
         {
             const int xOffset = 60;
-            //spriteBatch.DrawString(font, "Press any key", new Vector2(xOffset, 50), Color.White);
-            //spriteBatch.DrawString(font, "to play...", new Vector2(xOffset, 70), Color.White);
-            //spriteBatch.DrawString(font, "Top scores:", new Vector2(xOffset, 120), Color.Yellow);
+            spriteBatch.DrawString(font, "Press any key", new Vector2(xOffset, 50), Color.White);
+            spriteBatch.DrawString(font, "to play...", new Vector2(xOffset, 70), Color.White);
+            spriteBatch.DrawString(font, "Top scores:", new Vector2(xOffset, 120), Color.Yellow);
 
             for (int i = 0; i < topScores.Items.Count; i++)
             {
