@@ -6,7 +6,7 @@ namespace PxTetris.Core.GameScreenComponents
 {
     public class Brick
     {
-        private readonly IReadOnlyList<Square?[,]> brickKinds = new[]
+        private static readonly IReadOnlyList<Square?[,]> brickKinds = new[]
         {
             new Square?[,] { { Square.Green, Square.Green, Square.Green, Square.Green } },
             new Square?[,] { { Square.Green }, { Square.Green }, { Square.Green }, { Square.Green } },

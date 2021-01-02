@@ -8,11 +8,6 @@ namespace PxTetris.Core.GameScreenComponents
         public int ScoreToNextLevel { get; private set; } = 500;
         public TimeSpan Interval => TimeSpan.FromMilliseconds(500 * Math.Pow(0.75, Number - 1));
 
-        public bool HasScoreForNextLevel(int score)
-        {
-            return score >= ScoreToNextLevel;
-        }
-
         public void IncreaseLevel()
         {
             Number++;

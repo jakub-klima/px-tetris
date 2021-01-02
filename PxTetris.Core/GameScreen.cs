@@ -12,7 +12,7 @@ namespace PxTetris.Core
     public class GameScreen : IScreen
     {
         private const int squareSize = 20;
-        const int gameAreaOffset = 75;
+        private const int gameAreaOffset = 75;
 
         public bool NextScreen { get; private set; }
         public int Score { get; private set; }
@@ -94,7 +94,7 @@ namespace PxTetris.Core
                             ClearRow();
                             rowsClearedCombo++;
                             Score += 100 * (int)Math.Pow(2, rowsClearedCombo - 1);
-                            if (level.HasScoreForNextLevel(Score))
+                            if (Score > level.ScoreToNextLevel)
                             {
                                 level.IncreaseLevel();
                                 state = GameState.LevelUp;
@@ -313,7 +313,8 @@ namespace PxTetris.Core
         private void DrawSquare(SpriteBatch spriteBatch, Textures textures, Square square, int x, int y, int xOffset = 0, int yOffset = gameAreaOffset, float scale = 1)
         {
             Texture2D texture = GetTexture(textures, square);
-            Rectangle destination = new Rectangle(xOffset + (int)(x * squareSize * scale), yOffset + (int)(y * squareSize * scale), (int)(squareSize * scale), (int)(squareSize * scale));
+            float scaledSquareSize = squareSize * scale;
+            Rectangle destination = new Rectangle(xOffset + (int)(x * scaledSquareSize), yOffset + (int)(y * scaledSquareSize), (int)scaledSquareSize, (int)scaledSquareSize);
             spriteBatch.Draw(texture, destination, Color.White);
         }
 
