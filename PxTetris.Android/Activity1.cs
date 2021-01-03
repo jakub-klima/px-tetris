@@ -12,8 +12,8 @@ namespace PxTetris.Android
         Icon = "@drawable/icon",
         AlwaysRetainTaskState = true,
         LaunchMode = LaunchMode.SingleInstance,
-        ScreenOrientation = ScreenOrientation.FullUser, // ve stare impl. bylo: ScreenOrientation.Portrait
-        ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.Keyboard | ConfigChanges.KeyboardHidden | ConfigChanges.ScreenSize // ve stare impl. bylo jeste: | ConfigChanges.ScreenLayout
+        ScreenOrientation = ScreenOrientation.Portrait,
+        ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.Keyboard | ConfigChanges.KeyboardHidden | ConfigChanges.ScreenSize
     )]
     public class Activity1 : AndroidGameActivity, View.IOnSystemUiVisibilityChangeListener
     {
