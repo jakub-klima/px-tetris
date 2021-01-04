@@ -10,7 +10,7 @@ namespace PxTetris.Core
     {
         private readonly Textures textures = new Textures();
         private readonly TopScores topScores = new TopScores();
-        protected readonly GraphicsDeviceManager graphics;
+        private readonly GraphicsDeviceManager graphics;
         protected GameKeyboard keyboard;
         private SpriteBatch spriteBatch;
         private SpriteFont font;
@@ -19,15 +19,25 @@ namespace PxTetris.Core
 
         public TetrisGame()
         {
-            graphics = new GraphicsDeviceManager(this)
-            {
-                PreferredBackBufferWidth = 260,
-                PreferredBackBufferHeight = 435
-            };
+            graphics = new GraphicsDeviceManager(this);
             keyboard = new GameKeyboard();
             Content.RootDirectory = "Content";
             activeScreen = new InitScreen(topScores);
             Window.Title = "Px Tetris";
+        }
+
+        protected override void Initialize()
+        {
+            AjustGraphics(graphics);
+            graphics.ApplyChanges();
+
+            base.Initialize();
+        }
+
+        protected virtual void AjustGraphics(GraphicsDeviceManager graphics)
+        {
+            graphics.PreferredBackBufferWidth = 260;
+            graphics.PreferredBackBufferHeight = 435;
         }
 
         protected override void LoadContent()

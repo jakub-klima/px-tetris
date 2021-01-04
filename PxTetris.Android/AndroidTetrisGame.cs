@@ -6,20 +6,25 @@ namespace PxTetris.Android
 {
     public class AndroidTetrisGame : TetrisGame
     {
+        private int screenWidth;
+        private int screenHeight;
+
         protected override void Initialize()
         {
-            int screenWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
-            int screenHeight = (int)(screenWidth * 16.0 / 9); // CurrentDisplayMode.Height does not have correct value in Initialize(). Also we want to force 16:9 for full-view screens.
-
-            graphics.PreferredBackBufferWidth = screenWidth;
-            graphics.PreferredBackBufferHeight = screenHeight;
-            graphics.IsFullScreen = true;
-            graphics.ApplyChanges();
+            screenWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
+            screenHeight = (int)(screenWidth * 16.0 / 9); // CurrentDisplayMode.Height does not have correct value in Initialize(). Also we want to force 16:9 for full-view screens.
 
             scale = screenWidth / 260f;
             keyboard = new AndroidGameKeyboard(screenWidth, () => activeScreen);
 
             base.Initialize();
+        }
+
+        protected override void AjustGraphics(GraphicsDeviceManager graphics)
+        {
+            graphics.PreferredBackBufferWidth = screenWidth;
+            graphics.PreferredBackBufferHeight = screenHeight;
+            graphics.IsFullScreen = true;
         }
 
         protected override void DrawAdHoc(SpriteBatch spriteBatch, Textures textures, SpriteFont font)
