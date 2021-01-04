@@ -12,6 +12,7 @@
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Icon.ico" />
+    <EmbeddedResource Include="Icon.bmp" />
   </ItemGroup>
   <ItemGroup>
     <MonoGameContentReference Include="..\PxTetris.Core\Content\Content.mgcb" />
