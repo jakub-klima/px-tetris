@@ -46,12 +46,13 @@ namespace PxTetris.Core
                 Exit();
             }
 
+            activeScreen.Update(keyboard, gameTime.ElapsedGameTime);
+
             if (activeScreen.NextScreen)
             {
                 activeScreen = CreateNextScreen();
+                keyboard.Update(); // Fixes keyboard.lastState for Android where keyboard.Update() depends on active screen.
             }
-
-            activeScreen.Update(keyboard, gameTime.ElapsedGameTime);
 
             base.Update(gameTime);
         }
