@@ -8,6 +8,7 @@
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
+    <AssemblyName>Px Tetris</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Icon.ico" />
