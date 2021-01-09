@@ -27,7 +27,7 @@ namespace PxTetris.Core.GameScreenComponents
 
         public void RequestGameOverTick()
         {
-            RequestTick(TimeSpan.FromSeconds(2));
+            RequestTick(TimeSpan.FromSeconds(3));
         }
 
         public void RequestGameMessageTick()

@@ -27,10 +27,10 @@ namespace PxTetris.Core
                 items = new List<TopScore>
                 {
                     new TopScore("JHN", 4000),
-                    new TopScore("MIA", 3500),
-                    new TopScore("BOB", 3000),
-                    new TopScore("EVE", 2500),
-                    new TopScore("JOE", 2000)
+                    new TopScore("MIA", 3000),
+                    new TopScore("BOB", 2000),
+                    new TopScore("EVE", 1500),
+                    new TopScore("JOE", 1000)
                 };
 
                 Save();
